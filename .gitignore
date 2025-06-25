@@ -4,6 +4,7 @@ airflow.cfg
 docker-compose.yaml
 
 logs/dag*
+logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
