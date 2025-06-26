@@ -6,6 +6,7 @@ docker-compose.yaml
 logs/dag*
 logs*
 *logs*
+*latest*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
