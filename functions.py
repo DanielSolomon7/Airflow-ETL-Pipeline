@@ -95,8 +95,6 @@ def users_to_dfs(users_details):
         print(column_df)
         return column_df
 
-    gender_df = create_gender(df)
-
     def create_title(given_df):
         # Create a title DataFrame, with duplicate values dropped
         title_df = given_df["name_title"].drop_duplicates().reset_index()
@@ -112,8 +110,6 @@ def users_to_dfs(users_details):
 
         print(title_df)
         return title_df
-
-    title_df = create_title(df)
 
     def create_country(given_df):
         # Create a country DataFrame, with duplicate values dropped
@@ -131,15 +127,13 @@ def users_to_dfs(users_details):
         print(country_df)
         return country_df
 
-    country_df = create_country(df)
-
     def create_state(base_df, country_df):
         # Create a state DataFrame, with duplicate values dropped
         state_df = (
             base_df[["location_state", "location_country"]]
             .drop_duplicates()
             .reset_index()
-        )  # subset=["location_state"]
+        ) 
 
         # Rename column to just 'state'
         state_df.rename(columns={"location_state": "state"}, inplace=True)
@@ -157,8 +151,6 @@ def users_to_dfs(users_details):
 
         print(state_df)
         return state_df
-
-    state_df = create_state(df, country_df)
 
     def create_city(base_df, state_df, country_df):
         # Create a city DataFrame, with duplicate values dropped
@@ -202,8 +194,6 @@ def users_to_dfs(users_details):
         print(city_df)
 
         return city_df
-
-    city_df = create_city(df, state_df, country_df)
 
     def create_address(base_df, city_df, state_df, country_df):
         # Create an address DataFrame, with duplicate values dropped
@@ -263,12 +253,10 @@ def users_to_dfs(users_details):
                 "country",
             ],
             axis=1,
-        )  # "location_country", "country",
+        )
         print(address_df)
 
         return address_df
-
-    address_df = create_address(df, city_df, state_df, country_df)
 
     def create_user(base_df, gender_df, title_df, address_df):
         # Create a user DataFrame, with duplicate values dropped
@@ -331,44 +319,24 @@ def users_to_dfs(users_details):
             inplace=True,
         )
 
+        # Extract just date from datetime of dob_date + convert to datetime type
+        user_df["dob_date"] = user_df["dob_date"].str.slice(0, 10)
+        user_df["dob_date"] = pd.to_datetime(user_df["dob_date"])
+
+        # Extract just date from datetime of registered_date + convert to datetime type
+        user_df["registered_date"] = user_df["registered_date"].str.slice(0, 10)
+        user_df["registered_date"] = pd.to_datetime(user_df["registered_date"])
+
         print(user_df)
-        print(user_df.columns)
+        return user_df
 
+    gender_df = create_gender(df)
+    title_df = create_title(df)
+    country_df = create_country(df)
+    state_df = create_state(df, country_df)
+    city_df = create_city(df, state_df, country_df)
+    address_df = create_address(df, city_df, state_df, country_df)
     user_df = create_user(df, gender_df, title_df, address_df)
-
-    # def get_ids(given_df):
-    #     new_df = given_df.copy()
-
-    #     columns_for_ids = [
-    #         "gender",
-    #         "name_title",
-    #         "location_country",
-    #         "location_state",
-    #         "location_city",
-    #         "street_name",
-    #     ]
-
-    #     print(given_df)
-    #     print(given_df.columns)
-
-    #     for column in columns_for_ids:
-
-    #         # Create a gender DataFrame, with duplicate values dropped
-    #         column_df = new_df[f"{column}"].drop_duplicates().reset_index()
-
-    #         # Drop the created 'index' column
-    #         column_df = column_df.drop("index", axis=1)
-
-    #         # Create a gender_id column
-    #         column_df.insert(loc=0, column=f"{column}_id", value=(column_df.index + 1))
-
-    #         # Add gender_id column to the dataframe
-    #         new_df = pd.merge(new_df, column_df)
-
-    #     print(new_df)
-    #     return new_df
-
-    # get_ids(df)
 
 
 users_dfs = users_to_dfs(users_details)
