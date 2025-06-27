@@ -8,90 +8,89 @@ import pandas as pd
 
 @dag
 def user_processing():
-    
+
     create_tables = SQLExecuteQueryOperator(
         task_id="create_tables",
         conn_id="postgres",
-        sql=
-        "DROP TABLE IF EXISTS user_table;" \
-        "DROP TABLE IF EXISTS address;" \
-        "DROP TABLE IF EXISTS street;" \
-        "DROP TABLE IF EXISTS city;" \
-        "DROP TABLE IF EXISTS state;" \
-        "DROP TABLE IF EXISTS country;" \
-        "DROP TABLE IF EXISTS title;" \
-        "DROP TABLE IF EXISTS gender;" \
-            "CREATE TABLE IF NOT EXISTS gender (" \
-            "   gender_id INT PRIMARY KEY," \
-            "   gender VARCHAR(50)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS title (" \
-                    "   title_id INT PRIMARY KEY," \
-                    "   title VARCHAR(50)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS country (" \
-                    "   country_id INT PRIMARY KEY," \
-                    "   country VARCHAR(50)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS state (" \
-                    "   state_id INT PRIMARY KEY," \
-                    "   state VARCHAR(50)," \
-                    "   country_id INT," \
-                    "   CONSTRAINT fk_country FOREIGN KEY (country_id)"
-                    "   REFERENCES country(country_id)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS city (" \
-                    "   city_id INT PRIMARY KEY," \
-                    "   city VARCHAR(50)," \
-                    "   state_id INT," \
-                    "   CONSTRAINT fk_state FOREIGN KEY (state_id)"
-                    "   REFERENCES state(state_id)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS address (" \
-                        "   address_id INT PRIMARY KEY," \
-                        "   street_number INT," \
-                        "   street_name VARCHAR(250)," \
-                        "   postcode VARCHAR(100)," \
-                        "   city_id INT," \
-                        "   CONSTRAINT fk_city FOREIGN KEY (city_id)"
-                        "   REFERENCES city(city_id)" \
-            ")" \
-            ";"
-            "CREATE TABLE IF NOT EXISTS user_table (" \
-                        "   user_id INT PRIMARY KEY," \
-                        "   first_name VARCHAR(200)," \
-                        "   last_name VARCHAR(200)," \
-                        "   email VARCHAR(200)," \
-                        "   phone VARCHAR(200)," \
-                        "   cell_phone VARCHAR(200)," \
-                        "   login_username VARCHAR(300)," \
-                        "   login_password VARCHAR(300)," \
-                        "   dob_date DATE," \
-                        "   registered_date DATE," \
-                        "   gender_id INT," \
-                        "   CONSTRAINT fk_gender FOREIGN KEY (gender_id)"
-                        "   REFERENCES gender(gender_id)," \
-                        "   title_id INT," \
-                        "   CONSTRAINT fk_title FOREIGN KEY (title_id)"
-                        "   REFERENCES title(title_id)," \
-                        "   address_id INT," \
-                        "   CONSTRAINT fk_address FOREIGN KEY (address_id)"
-                        "   REFERENCES address(address_id)" \
-            ")" \
-            ";"
+        sql="DROP TABLE IF EXISTS user_table;"
+        "DROP TABLE IF EXISTS address;"
+        "DROP TABLE IF EXISTS street;"
+        "DROP TABLE IF EXISTS city;"
+        "DROP TABLE IF EXISTS state;"
+        "DROP TABLE IF EXISTS country;"
+        "DROP TABLE IF EXISTS title;"
+        "DROP TABLE IF EXISTS gender;"
+        "CREATE TABLE IF NOT EXISTS gender ("
+        "   gender_id INT PRIMARY KEY,"
+        "   gender VARCHAR(50)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS title ("
+        "   title_id INT PRIMARY KEY,"
+        "   title VARCHAR(50)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS country ("
+        "   country_id INT PRIMARY KEY,"
+        "   country VARCHAR(50)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS state ("
+        "   state_id INT PRIMARY KEY,"
+        "   state VARCHAR(50),"
+        "   country_id INT,"
+        "   CONSTRAINT fk_country FOREIGN KEY (country_id)"
+        "   REFERENCES country(country_id)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS city ("
+        "   city_id INT PRIMARY KEY,"
+        "   city VARCHAR(50),"
+        "   state_id INT,"
+        "   CONSTRAINT fk_state FOREIGN KEY (state_id)"
+        "   REFERENCES state(state_id)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS address ("
+        "   address_id INT PRIMARY KEY,"
+        "   street_number INT,"
+        "   street_name VARCHAR(250),"
+        "   postcode VARCHAR(100),"
+        "   city_id INT,"
+        "   CONSTRAINT fk_city FOREIGN KEY (city_id)"
+        "   REFERENCES city(city_id)"
+        ")"
+        ";"
+        "CREATE TABLE IF NOT EXISTS user_table ("
+        "   user_id INT PRIMARY KEY,"
+        "   first_name VARCHAR(200),"
+        "   last_name VARCHAR(200),"
+        "   email VARCHAR(200),"
+        "   phone VARCHAR(200),"
+        "   cell_phone VARCHAR(200),"
+        "   login_username VARCHAR(300),"
+        "   login_password VARCHAR(300),"
+        "   dob_date DATE,"
+        "   registered_date DATE,"
+        "   gender_id INT,"
+        "   CONSTRAINT fk_gender FOREIGN KEY (gender_id)"
+        "   REFERENCES gender(gender_id),"
+        "   title_id INT,"
+        "   CONSTRAINT fk_title FOREIGN KEY (title_id)"
+        "   REFERENCES title(title_id),"
+        "   address_id INT,"
+        "   CONSTRAINT fk_address FOREIGN KEY (address_id)"
+        "   REFERENCES address(address_id)"
+        ")"
+        ";",
     )
-    
 
     @task.sensor(poke_interval=30, timeout=300)
     def is_api_available() -> PokeReturnValue:
         import requests
+
         response = requests.get("https://randomuser.me/api/?results=50")
-        
+
         if response.status_code == 200:
             available = True
             users = response.json()
@@ -100,7 +99,6 @@ def user_processing():
             users = None
 
         return PokeReturnValue(is_done=available, xcom_value=users)
-    
 
     @task
     def extract_users_details(users):
@@ -124,7 +122,7 @@ def user_processing():
             ["dob", "date"],
             ["registered", "date"],
             "phone",
-            "cell"
+            "cell",
         ]
 
         # Iterate through each user from the API response
@@ -156,11 +154,13 @@ def user_processing():
         print(users_details)
         return users_details
 
-
     @task
-    def transform_users(users_details):
-        df = pd.DataFrame(users_details)
-        print(df)
+    def transform_users_as_csvs(users_details):
+
+        def base_df():
+            df = pd.DataFrame(users_details)
+            print(df)
+            return df
 
         def create_gender(given_df):
             # Create a gender DataFrame, with duplicate values dropped
@@ -213,7 +213,7 @@ def user_processing():
                 base_df[["location_state", "location_country"]]
                 .drop_duplicates()
                 .reset_index()
-            ) 
+            )
 
             # Rename column to just 'state'
             state_df.rename(columns={"location_state": "state"}, inplace=True)
@@ -369,7 +369,9 @@ def user_processing():
             user_df = pd.merge(user_df, gender_df, on="gender")
 
             # merge title_df to user_df, to get the title_id
-            user_df = pd.merge(user_df, title_df, left_on="name_title", right_on="title")
+            user_df = pd.merge(
+                user_df, title_df, left_on="name_title", right_on="title"
+            )
 
             # merge address_df to user_df, to get the address_id
             user_df = pd.merge(user_df, address_df, on=["street_number", "street_name"])
@@ -410,6 +412,24 @@ def user_processing():
             print(user_df)
             return user_df
 
+        def users_to_csv(
+            gender_df, title_df, country_df, state_df, city_df, address_df, user_df
+        ):
+            dfs = {
+                "gender": gender_df,
+                "title": title_df,
+                "country": country_df,
+                "state": state_df,
+                "city": city_df,
+                "address": address_df,
+                "user_table": user_df,
+            }
+
+            for table_name, df in dfs.items():
+                df.to_csv(f"/tmp/{table_name}.csv", index=False)
+
+        df = base_df()
+
         gender_df = create_gender(df)
         title_df = create_title(df)
         country_df = create_country(df)
@@ -418,43 +438,36 @@ def user_processing():
         address_df = create_address(df, city_df, state_df, country_df)
         user_df = create_user(df, gender_df, title_df, address_df)
 
-        dfs = {
-            "gender": gender_df,
-            "title": title_df,
-            "country": country_df,
-            "state": state_df,
-            "city": city_df,
-            "address": address_df,
-            "user_table": user_df,
-        }
-    
+        users_to_csv(
+            gender_df, title_df, country_df, state_df, city_df, address_df, user_df
+        )
 
-        for table_name, df in dfs.items():
-            df.to_csv(f"/tmp/{table_name}.csv", index=False)
-
-        
     @task
     def store_users():
         hook = PostgresHook(postgres_conn_id="postgres")
 
-        table_names = ["gender", "title",
-        "country", "state", "city", "address", "user_table"]
+        table_names = [
+            "gender",
+            "title",
+            "country",
+            "state",
+            "city",
+            "address",
+            "user_table",
+        ]
 
         for table in table_names:
             hook.copy_expert(
                 sql=f"COPY {table} FROM STDIN WITH CSV HEADER;",
-                filename=f"/tmp/{table}.csv"
+                filename=f"/tmp/{table}.csv",
             )
 
-
-    transform_users(extract_users_details(create_tables >> is_api_available())) >> store_users()
-
-
-    # create_tables
-    # users = is_api_available()
-    # users_details = extract_users_details(users)
-    # users_dfs = transform_users(users_details)
-    # store_user()
+    (
+        transform_users_as_csvs(
+            extract_users_details(create_tables >> is_api_available())
+        )
+        >> store_users()
+    )
 
 
 user_processing()
