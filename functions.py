@@ -330,6 +330,8 @@ def users_to_dfs(users_details):
         print(user_df)
         return user_df
 
+    dfs = []
+
     gender_df = create_gender(df)
     title_df = create_title(df)
     country_df = create_country(df)
@@ -338,5 +340,22 @@ def users_to_dfs(users_details):
     address_df = create_address(df, city_df, state_df, country_df)
     user_df = create_user(df, gender_df, title_df, address_df)
 
+    dfs = {
+            "gender": gender_df,
+            "title": title_df,
+            "country": country_df,
+            "state": state_df,
+            "city": city_df,
+            "address": address_df,
+            "user": user_df,
+        }
+    
+
+    for table_name, df in dfs.items():
+        df.to_csv(f"{table_name}.csv", index=False)
+
+    #return dfs
+
 
 users_dfs = users_to_dfs(users_details)
+print(users_dfs)
