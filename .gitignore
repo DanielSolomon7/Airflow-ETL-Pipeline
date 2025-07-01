@@ -2,6 +2,7 @@
 *docker-compose.yaml
 airflow.cfg
 docker-compose.yaml
+*.env
 
 logs/dag*
 logs*

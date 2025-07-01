@@ -3,7 +3,6 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.sdk.bases.sensor import PokeReturnValue
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.standard.operators.python import PythonOperator
-import pandas as pd
 
 
 @dag
@@ -156,6 +155,7 @@ def user_processing():
 
     @task
     def transform_users_as_csvs(users_details):
+        import pandas as pd
 
         def base_df():
             df = pd.DataFrame(users_details)
