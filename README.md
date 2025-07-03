@@ -8,6 +8,7 @@ This project demonstrates a simple **ETL (Extract, Transform, Load)** pipeline o
 - **Transforms** the data into a normalized relational format
 - **Loads** the structured data into a PostgreSQL database
 
+![ERD](ERD.png)
 ![Airflow ETL Project](Airflow_ETL_Project.png)
 
 ---

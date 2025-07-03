@@ -19,6 +19,7 @@ def user_processing():
         "DROP TABLE IF EXISTS country;"
         "DROP TABLE IF EXISTS title;"
         "DROP TABLE IF EXISTS gender;"
+        ""
         "CREATE TABLE IF NOT EXISTS gender ("
         "   gender_id INT PRIMARY KEY,"
         "   gender VARCHAR(50)"
