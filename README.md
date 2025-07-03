@@ -147,7 +147,7 @@ Contributions are welcome! To contribute:
    ```
 6. **Open a pull request** to the `main` branch
 
-### 🧼 Code Style
+### 🧼 Development Tips
 
-- Format with tools like `black`
+- Format Python code with tools like `black`
 - Use meaningful commit messages
